@@ -1,0 +1,25 @@
+# Copiar a .github/workflows/release-please.yml. Cada línea marcada con ADAPTAR depende del proyecto.
+name: Release Please
+
+on:
+  push:
+    branches: [main] # ADAPTAR: la rama sobre la que se cortan las versiones (main o develop)
+
+# Hace falta escribir para abrir el PR de release y, al mergearlo, crear el tag y el release.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v5 # ADAPTAR: verificar la versión mayor vigente (ver la guía)
+        with:
+          # Un PR abierto con el GITHUB_TOKEN por defecto no dispara otros workflows. Con un token personal
+          # guardado como RELEASE_PLEASE_TOKEN el CI corre solo en el PR de release; sin él se usa el por defecto.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          # target-branch: develop # ADAPTAR: descomentar si la rama de la sección "on" no es la predeterminada del repositorio
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

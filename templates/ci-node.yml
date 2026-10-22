@@ -1,0 +1,37 @@
+# Copiar a .github/workflows/ci.yml. Cada línea marcada con ADAPTAR depende del proyecto.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main] # ADAPTAR: la rama de integración (main, develop...)
+
+# Una corrida nueva sobre la misma referencia reemplaza a la que está en curso.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Mínimo privilegio: el workflow solo necesita leer el código.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # Los nombres de los checks son los que se exigen en la protección de rama; no renombrar sin actualizarla.
+    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      # Que cada combinación informe aunque otra falle.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest] # ADAPTAR: solo los sistemas donde el proyecto debe funcionar
+        node: [20, 22] # ADAPTAR: desde el mínimo que declara "engines" hasta el vigente
+    steps:
+      - uses: actions/checkout@v7 # ADAPTAR: verificar la versión mayor vigente (ver la guía)
+      - uses: actions/setup-node@v7 # ADAPTAR: ídem
+        with:
+          node-version: ${{ matrix.node }}
+          # cache: npm # ADAPTAR: activar si el proyecto tiene dependencias (npm | pnpm | yarn)
+      # - run: npm ci # ADAPTAR: instalar dependencias si las hay
+      - run: npm test
