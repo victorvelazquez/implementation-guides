@@ -1,0 +1,32 @@
+# Lista de proyectos que leen los scripts de coordinación.
+# Copiar a "proyectos.conf" (junto a los scripts) y editar. Una línea por proyecto:
+#
+#   prefijo|ruta|nombre|rol
+#
+#   prefijo  identificador corto (se usa en los comandos y en los IDs entre proyectos)
+#   ruta     absoluta, o relativa. Las rutas RELATIVAS se resuelven contra la variable de entorno
+#            RAIZ_PROYECTOS; si no está definida, contra la carpeta donde están los scripts (NO contra
+#            donde corrés el comando). Ante la duda, usá rutas absolutas.
+#   nombre   cómo se muestra
+#   rol      "sala" para el repositorio de Dirección, "proyecto" para los demás
+#
+# Líneas que empiezan con # y líneas vacías se ignoran. Se toleran BOM UTF-8 y finales de línea CRLF.
+# Una ruta suelta (bash puerta-de-ciclo.sh C:/ruta/al/repo) funciona sin este archivo.
+#
+# --- Ejemplo 1: rutas absolutas (no dependen de nada más) ---
+#
+# sala|C:/Users/ana/Developer/sala-de-direccion|Dirección|sala
+# a|C:/Users/ana/Developer/proyecto-a|Proyecto A|proyecto
+# b|C:/Users/ana/Developer/proyecto-b|Proyecto B|proyecto
+#
+# --- Ejemplo 2: rutas relativas con RAIZ_PROYECTOS ---
+# Con  export RAIZ_PROYECTOS=C:/Users/ana/Developer  estas líneas apuntan a
+# C:/Users/ana/Developer/sala-de-direccion, C:/Users/ana/Developer/proyecto-a, etc.
+# Sin RAIZ_PROYECTOS se buscarían dentro de la carpeta de los scripts.
+#
+# sala|sala-de-direccion|Dirección|sala
+# a|proyecto-a|Proyecto A|proyecto
+# b|proyecto-b|Proyecto B|proyecto
+#
+# Dejá activas (sin #) solo las líneas que uses. Este ejemplo no tiene ninguna activa a propósito:
+# copiado tal cual, los scripts avisan que no hay proyectos en vez de apuntar a carpetas inexistentes.
