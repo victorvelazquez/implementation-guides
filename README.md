@@ -14,6 +14,27 @@ Son **preferencias, no órdenes**: un punto de partida con criterio. Si el proye
 
 Los archivos listos para copiar están en [`templates/`](templates/). Para escribir una guía nueva, usar [`_TEMPLATE.md`](_TEMPLATE.md).
 
+## Categorías
+
+| Categoría | Guías |
+| --- | --- |
+| Proceso de trabajo y coordinación (Orquestación) | [Registro](guides/orquestacion-registro.md) · [Ciclo](guides/orquestacion-ciclo.md) · [Dirección](guides/orquestacion-direccion.md) · [Enlace](guides/orquestacion-enlace.md) · [Herramientas](guides/orquestacion-herramientas.md) · [Adopción](guides/orquestacion-adopcion.md) |
+| Calidad e integración continua | [CI con GitHub Actions](guides/ci-github-actions.md) |
+| Ramas, versionado y releases | [Ramas y métodos de merge](guides/branching-and-merge.md) · [Versionado y releases](guides/versioning-and-releases.md) |
+
+El índice completo, legible por máquina, está en [`index.json`](index.json).
+
+## Perfiles de adopción
+
+Un perfil es un conjunto de guías que se adoptan juntas. Para empezar, ver [Adopción](guides/orquestacion-adopcion.md).
+
+| Perfil | Para quién |
+| --- | --- |
+| Compatible con panel | Proyecto independiente que quiere publicar su avance de forma estándar |
+| Con sala | Varios proyectos que se consumen entre sí |
+| Proyecto nuevo | Arranca de cero: guías vecinas y luego el perfil que corresponda |
+| Proyecto existente | Auditoría primero, sin reescribir el historial |
+
 ## Cómo pedirle a una IA que use una guía
 
 Basta con mencionar el archivo:
@@ -24,6 +45,14 @@ Leé guides/versioning-and-releases.md de implementation-guides y aplicalo a est
 
 Funciona con una ruta local o con la URL del archivo en bruto:
 `https://raw.githubusercontent.com/victorvelazquez/implementation-guides/main/guides/<guía>.md`
+
+Para adoptar un perfil completo:
+
+```text
+Leé guides/orquestacion-adopcion.md de implementation-guides y aplicá el perfil «compatible con panel» a este proyecto.
+```
+
+La IA deja el registro de lo adoptado en `docs/ORQUESTACION.md` del proyecto y anota las desviaciones.
 
 ## Protocolo para la IA que aplica una guía
 
