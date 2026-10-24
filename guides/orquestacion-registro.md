@@ -65,6 +65,7 @@ bash scripts/orquestacion/verificar-adopcion.sh <ruta-del-proyecto>
 | REG-2 | El control exige la cabecera de tres líneas en orden y las columnas obligatorias |
 | REG-3 | El control informa IDs repetidos, mal formados y dependencias circulares |
 | REG-4 | A mano, en la revisión de cada unidad: el diff de la unidad toca su fila del `ROADMAP.md` |
+| REG-7 | `verificar-adopcion.sh --remoto` valida `origin/<base>:docs/ROADMAP.md` (sin `fetch`: correr `git fetch` antes si hace falta); sin la opción, avisa si el árbol local difiere del remoto |
 
 Un `ROADMAP.md` ausente en un proyecto que adoptó el bloque es un **error**.
 
@@ -77,12 +78,16 @@ Un `ROADMAP.md` ausente en un proyecto que adoptó el bloque es un **error**.
 | Un panel muestra `Completada` una unidad con el PR abierto | El lector mira el árbol de trabajo y no la rama base remota | REG-7 |
 | La unidad parece no tener siguiente | Todas las pendientes dependen de filas aún no completadas | Mirar `Depende de`; si es un bloqueo externo, marcarlo `Bloqueada` con nota |
 | `siguiente` queda trabado por «Node» o por otro proyecto | Se trató una dependencia externa como bloqueante | REG-6: lo externo es informativo |
+| `siguiente` toma como libres unidades que dependen de un grupo (por ejemplo `E04`, con filas `E04a`…`E04e`) | `E04` no existe como fila: por REG-6 una dependencia que no es fila es informativa y no bloquea | Escribir en `Depende de` el ID de la **última fila del grupo** (`E04e`) o todas las filas. El aviso del script lo sugiere: «depende de «E04», que no existe en la tabla: ¿grupo? usá la última fila, p. ej. E04e» |
+| El control pasa en mi disco y el panel ve otra cosa | El control mira el árbol de trabajo y los lectores leen `origin/<base>` (REG-7) | `verificar-adopcion.sh --remoto`; el modo normal avisa si el árbol local difiere del remoto |
 
 ## 7. No verificado
 
 - La lectura de este formato por un panel concreto está **especificada** pero no implementada.
 - El vínculo unidad→rama/PR (REG-8) es una convención; no se probó con un panel.
 - El método se probó pocas horas, en un solo conjunto de proyectos.
+- El aviso de grupo solo reconoce filas cuyo ID es el nombre del grupo más letras (`E04` → `E04a`…); otros esquemas de nombres no se sugieren.
+- `--remoto` se probó con remotos locales, no contra un alojamiento real.
 
 ## 8. Desviaciones
 

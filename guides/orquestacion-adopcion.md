@@ -33,6 +33,7 @@ Los métodos son cuatro: **Registro** (qué se hizo y qué sigue), **Ciclo** (c�
 | ADO-6 | SHOULD | Probar con **uno o dos proyectos piloto** antes de extenderlo a los demás | Los problemas aparecen con el uso, no leyendo |
 | ADO-7 | SHOULD | Correr `verificar-adopcion.sh` al terminar | Detecta bloque desactualizado y `ROADMAP.md` inválido |
 | ADO-8 | MAY | Adoptar un solo método | Útil para empezar de a poco |
+| ADO-9 | MUST | Si ya existe un `docs/ROADMAP.md` **con otro formato** (tabla con otras columnas, narrativa alrededor), crear la tabla estándar y **no dejar dos tablas con el mismo estado**: la narrativa se mueve a otro archivo (con enlace desde la cabecera) o queda debajo de la tabla estándar, sin repetir estados | REG-7: el estado tiene una sola fuente; dos tablas se desalinean y el lector toma la primera que encuentra |
 
 ### Perfiles
 
@@ -84,9 +85,18 @@ Dependencias entre métodos: **Enlace** necesita Dirección; **Dirección** nece
 | --- | --- | --- |
 | `AGENTS.md` | No hay | Crearlo con los bloques |
 | Cómo se llevan las tareas hoy | Hay varios mecanismos | `ROADMAP.md` corto con las unidades vigentes; lo anterior, como archivo |
+| `docs/ROADMAP.md` | Ya existe con otro formato (otras columnas, texto alrededor de la tabla) | Ver «ROADMAP.md existente con otro formato», abajo (ADO-9) |
 | Rama base y estado del árbol | Árbol sucio o varias ramas viejas | Dejarlo limpio antes de adoptar (la puerta) |
 | CI y ramas protegidas | No hay | Guías vecinas |
 | Sesiones y contratos con otros proyectos | Hay dependencias | Perfil «con sala» |
+
+### ROADMAP.md existente con otro formato
+
+1. Elegir **dónde vive la narrativa**: moverla a otro archivo (por ejemplo `docs/HISTORIA.md`) y enlazarlo desde la cabecera, o dejarla **debajo** de la tabla estándar.
+2. Crear la tabla estándar (`ID`, `Entrega`, `Depende de`, `Estado`) con las unidades vigentes, usando la plantilla.
+3. **Retirar la tabla anterior** (o pasarla al archivo de historia). No dejar las dos en `docs/ROADMAP.md`: si conviven, hay dos fuentes del mismo estado (REG-7).
+4. Si la narrativa quedó debajo, que no repita estados ni lleve otra tabla con columnas de estado.
+5. Hacerlo en el mismo PR de la adopción (ADO-4).
 
 ## 5. Cómo verificar que quedó bien
 
@@ -95,6 +105,14 @@ bash scripts/orquestacion/verificar-adopcion.sh <ruta-del-proyecto>
 ```
 
 Sin errores, y con las versiones de los bloques iguales a la vigente (`scripts/orquestacion/VERSION`).
+
+El control mira el árbol de trabajo. Lo que leen el panel y la sala es la rama base remota (REG-7), así que, con el PR de adopción ya fusionado y las referencias al día (`git fetch`), correrlo también con `--remoto`: `bash scripts/orquestacion/verificar-adopcion.sh --remoto <ruta-del-proyecto>`. En modo normal, el control avisa si `docs/ROADMAP.md` local difiere del remoto.
+
+| Regla | Cómo se comprueba |
+| --- | --- |
+| ADO-3 | A mano: lo anterior está como archivo y `docs/ROADMAP.md` lo enlaza |
+| ADO-7 | Correr el control (local y `--remoto`); sin errores |
+| ADO-9 | A mano: en `docs/ROADMAP.md` hay **una sola tabla con columnas de estado** (la estándar). El control toma la primera tabla con las columnas obligatorias e ignora en silencio las posteriores, así que no detecta una segunda tabla de estado: buscarla con `grep -n "Estado" docs/ROADMAP.md` |
 
 ## 6. Problemas conocidos
 
@@ -110,6 +128,8 @@ Sin errores, y con las versiones de los bloques iguales a la vigente (`scripts/o
 - Se probó de forma informal en un conjunto pequeño de proyectos de una misma persona y en pocas horas; no con equipos humanos ni con una adopción formal completa.
 - La adopción de un proyecto muy grande (decenas de unidades abiertas) no se probó.
 - La lectura del `ROADMAP.md` por un panel concreto todavía no existe.
+- `--remoto` se probó con remotos locales (repositorios bare), no contra un alojamiento real, y sin `fetch` automático: si las referencias locales están viejas, valida lo viejo.
+- El procedimiento ADO-9 (ROADMAP.md existente con otro formato) no se probó sobre un proyecto real; el control no detecta dos tablas de estado.
 
 ## 8. Desviaciones
 
