@@ -556,6 +556,93 @@ OUT="$(PATH="$S/bin:$PATH" ESTADO_DIR="$S/estado" bash "$SCR/estado-vivo.sh" "$S
 rc_es 0; tiene "| r05 |"; tiene "| wt04 |"; no_tiene "repositorio no encontrado"
 fin
 
+# --- adoptar.sh ----------------------------------------------------------------------------------------
+adoptar() { corre timeout 30 bash "$SCR/adoptar.sh" "$@"; }
+suma() { cksum "$1"/AGENTS.md "$1"/docs/*.md 2>/dev/null; }
+
+caso "41 adoptar: proyecto vacío (ruta con espacios, repo sin remoto): crea los tres archivos, no toca el índice"
+mkdir -p "$S/p/con espacios"; git init -q -b main "$S/p/con espacios"
+adoptar "$S/p/con espacios"; rc_es 0
+for f in AGENTS.md docs/ROADMAP.md docs/ORQUESTACION.md; do [ -f "$S/p/con espacios/$f" ] || { DETALLE="$DETALLE
+     no se creó $f"; MALO=1; }; done
+tiene "Resumen: 0 error(es)"
+[ "$(grep -c '<!-- orquestacion:registro v1.0 -->' "$S/p/con espacios/AGENTS.md")" = 1 ] || { DETALLE="$DETALLE
+     el bloque Registro no está exactamente una vez"; MALO=1; }
+[ -z "$(git -C "$S/p/con espacios" diff --cached --name-only)" ] || { DETALLE="$DETALLE
+     el índice de git cambió"; MALO=1; }
+fin
+
+caso "42 adoptar: AGENTS.md previo (con CRLF y BOM): agrega el bloque sin borrar las reglas actuales"
+mkdir -p "$S/p/a42"
+printf '\xEF\xBB\xBF# Reglas\r\n- No tocar la carpeta vieja.\r\n- Probar antes de entregar.' > "$S/p/a42/AGENTS.md"
+adoptar "$S/p/a42"; rc_es 0
+grep -q 'No tocar la carpeta vieja' "$S/p/a42/AGENTS.md" && grep -q 'Probar antes de entregar' "$S/p/a42/AGENTS.md" || { DETALLE="$DETALLE
+     se perdieron reglas previas"; MALO=1; }
+[ "$(head -c3 "$S/p/a42/AGENTS.md" | od -An -tx1 | tr -d ' \n')" = efbbbf ] || { DETALLE="$DETALLE
+     se perdió el BOM"; MALO=1; }
+[ "$(grep -c '<!-- orquestacion:registro v1.0 -->' "$S/p/a42/AGENTS.md")" = 1 ] || { DETALLE="$DETALLE
+     el bloque no se agregó una vez"; MALO=1; }
+[ "$(grep -c $'\r' "$S/p/a42/AGENTS.md")" -ge 5 ] || { DETALLE="$DETALLE
+     no se mantuvo CRLF"; MALO=1; }
+tiene "0 error(es)"
+fin
+
+caso "43 adoptar: idempotente (dos corridas no cambian nada)"
+mkdir -p "$S/p/a43"; printf '# AGENTS\n- regla\n' > "$S/p/a43/AGENTS.md"
+adoptar "$S/p/a43"; rc_es 0; antes="$(suma "$S/p/a43")"
+adoptar "$S/p/a43"; rc_es 0; tiene "ya está presente"
+[ "$antes" = "$(suma "$S/p/a43")" ] || { DETALLE="$DETALLE
+     la segunda corrida cambió archivos"; MALO=1; }
+[ "$(grep -c 'orquestacion:registro v' "$S/p/a43/AGENTS.md")" = 1 ] || { DETALLE="$DETALLE
+     bloque duplicado"; MALO=1; }
+fin
+
+caso "44 adoptar: versión anterior del bloque: avisa y no la pisa"
+mkdir -p "$S/p/a44"; printf '# AGENTS\n<!-- orquestacion:registro v0.9 -->\nviejo\n<!-- /orquestacion:registro -->\n' > "$S/p/a44/AGENTS.md"
+antes="$(cksum < "$S/p/a44/AGENTS.md")"
+adoptar "$S/p/a44"; tiene "AVISO"; tiene "v0.9"; tiene "no se modifica"
+[ "$antes" = "$(cksum < "$S/p/a44/AGENTS.md")" ] || { DETALLE="$DETALLE
+     se modificó el AGENTS.md"; MALO=1; }
+fin
+
+caso "45 adoptar: docs/ROADMAP.md existente no se pisa y remite a la guía"
+mkdir -p "$S/p/a45/docs"; printf '# Plan\n| Tarea | Hecho |\n| --- | --- |\n| x | si |\n' > "$S/p/a45/docs/ROADMAP.md"
+antes="$(cksum < "$S/p/a45/docs/ROADMAP.md")"
+adoptar "$S/p/a45"; tiene "docs/ROADMAP.md ya existe: no se modifica"; tiene "orquestacion-adopcion.md"
+[ "$antes" = "$(cksum < "$S/p/a45/docs/ROADMAP.md")" ] || { DETALLE="$DETALLE
+     se pisó el ROADMAP.md"; MALO=1; }
+fin
+
+caso "46 adoptar --solo-mostrar: no escribe nada"
+mkdir -p "$S/p/a46"
+adoptar --solo-mostrar "$S/p/a46"; rc_es 0; tiene "crearía"; tiene "no se escribió nada"
+[ -z "$(ls -A "$S/p/a46")" ] || { DETALLE="$DETALLE
+     --solo-mostrar escribió archivos"; MALO=1; }
+fin
+
+caso "47 adoptar: ruta inexistente y opción desconocida: código 2"
+adoptar "$S/p/no-existe"; rc_es 2; tiene "no existe"
+adoptar --nada "$S/p/a46"; rc_es 2; tiene "Opción desconocida: --nada"
+fin
+
+caso "48 adoptar: nombre de carpeta con & se copia literal en las plantillas"
+mkdir -p "$S/p/a&b & c"
+adoptar "$S/p/a&b & c"; rc_es 0
+grep -qF '# Orquestación en a&b & c' "$S/p/a&b & c/docs/ORQUESTACION.md" || { DETALLE="$DETALLE
+     el nombre no quedó literal en ORQUESTACION.md"; MALO=1; }
+grep -qF '# Hoja de ruta de a&b & c' "$S/p/a&b & c/docs/ROADMAP.md" || { DETALLE="$DETALLE
+     el nombre no quedó literal en ROADMAP.md"; MALO=1; }
+fin
+
+caso "49 adoptar: si una escritura falla, lo dice, no anuncia éxito y sale con 1"
+mkdir -p "$S/p/a49"; printf 'esto es un archivo, no una carpeta\n' > "$S/p/a49/docs"
+adoptar "$S/p/a49"; rc_es 1; tiene "ERROR: no se pudo escribir"; no_tiene "Listo."
+fin
+
+caso "50 adoptar: ruta vacía explícita: código 2"
+adoptar ""; rc_es 2; tiene "ruta vacía"
+fin
+
 echo
 echo "Resumen: $OKS bien, $FALLAS con falla."
 [ "$FALLAS" = 0 ]
