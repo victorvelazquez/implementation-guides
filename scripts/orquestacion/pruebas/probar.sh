@@ -417,6 +417,111 @@ proyecto_adoptado a31b; rm -f "$S/p/a31b/AGENTS.md"
 adopcion "$(ruta_p a31b)"; rc_es 1; tiene "ERROR: no existe AGENTS.md"; no_tiene "hay "
 fin
 
+# --- verificar-adopcion --remoto ----------------------------------------------------------------------
+# proyecto_git <nombre> [rama base]: proyecto adoptado dentro de un repo con remoto, ya subido a la base.
+proyecto_git() {
+	local n="$1" b="${2:-main}"
+	repo_nuevo "$n" "$b"
+	proyecto_adoptado "$n"
+	cp -R "$S/p/$n/." "$S/$n/"
+	git -C "$S/$n" add -A && git -C "$S/$n" commit -q -m adopcion && git -C "$S/$n" push -q origin "$b" 2>/dev/null
+}
+# Hoja de ruta con ID repetido (inválida): se sube al remoto mientras el árbol local queda válido.
+roadmap_roto() { { cab; cat <<'EOT'
+| ID | Entrega | Depende de | Estado |
+| --- | --- | --- | --- |
+| U0 | Adoptar | — | Completada |
+| U0 | Repetida | — | Pendiente |
+EOT
+} > "$1"; }
+
+caso "32 --remoto valida el remoto aunque el árbol local esté válido"
+proyecto_git g32
+roadmap_roto "$S/g32/docs/ROADMAP.md"; git -C "$S/g32" commit -q -am roto; git -C "$S/g32" push -q origin main 2>/dev/null
+git -C "$S/g32" reset -q --hard HEAD~1   # árbol local válido; origin/main (ya actualizada) roto
+adopcion "$S/g32"; rc_es 0; no_tiene "ERROR"
+adopcion --remoto "$S/g32"; rc_es 1; tiene "ERROR: ROADMAP.md, línea"; tiene "ID repetido: U0"
+fin
+
+caso "33 modo normal avisa si el árbol local difiere de origin/<base>"
+proyecto_git g33
+adopcion "$S/g33"; rc_es 0; no_tiene "AVISO"; tiene "docs/ROADMAP.md: válido"
+printf '\n<!-- cambio local -->\n' >> "$S/g33/docs/ROADMAP.md"
+adopcion "$S/g33"; rc_es 0; tiene "AVISO: docs/ROADMAP.md local difiere de origin/main"; cuenta_es "difiere de" 1
+fin
+
+caso "34 --remoto con ROADMAP.md válido en el remoto"
+proyecto_git g34
+adopcion --remoto "$S/g34"; rc_es 0; tiene "origin/main:docs/ROADMAP.md: válido"; no_tiene "ERROR"
+fin
+
+caso "35 --remoto no hace fetch: usa las referencias locales"
+proyecto_git g35
+git clone -q "$S/remotos/g35.git" "$S/g35-otro" 2>/dev/null
+roadmap_roto "$S/g35-otro/docs/ROADMAP.md"; git -C "$S/g35-otro" commit -q -am roto; git -C "$S/g35-otro" push -q origin main 2>/dev/null
+adopcion --remoto "$S/g35"; rc_es 0; tiene "válido"
+git -C "$S/g35" fetch -q
+adopcion --remoto "$S/g35"; rc_es 1; tiene "ID repetido: U0"
+fin
+
+caso "36 --remoto toma la base de origin/HEAD (no de main)"
+proyecto_git g36 trunk
+git -C "$S/g36" remote set-head origin trunk >/dev/null 2>&1
+git -C "$S/g36" checkout -q -b main
+roadmap_roto "$S/g36/docs/ROADMAP.md"; git -C "$S/g36" commit -q -am roto-en-main
+git -C "$S/g36" push -q origin main 2>/dev/null
+adopcion --remoto "$S/g36"; rc_es 0; tiene "origin/trunk:docs/ROADMAP.md: válido"
+fin
+
+caso "37 --remoto sin remoto origin: ERROR claro"
+proyecto_adoptado a37; git init -q -b main "$S/p/a37"
+adopcion --remoto "$(ruta_p a37)"; rc_es 1; tiene "ERROR: --remoto: no tiene remoto 'origin'"
+fin
+
+caso "37b --remoto con origin pero sin origin/<base> en las refs locales: ERROR que sugiere git fetch, sin fetch implícito"
+proyecto_adoptado a37b; git init -q -b main "$S/p/a37b"; git -C "$S/p/a37b" remote add origin "$S/remotos/no-importa.git"
+adopcion --remoto "$(ruta_p a37b)"; rc_es 1; tiene "ERROR: --remoto: origin/<base> no existe en las referencias locales (git fetch"; no_tiene "no tiene remoto"
+fin
+
+caso "37c --remoto con origin/HEAD apuntando a una rama que no está en las refs locales: nombra la rama y sugiere git fetch"
+proyecto_git g37c
+git -C "$S/g37c" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/otra
+adopcion --remoto "$S/g37c"; rc_es 1; tiene "ERROR: --remoto: origin/otra no existe en las referencias locales (git fetch"
+fin
+
+caso "33b modo normal: ROADMAP.md local que el remoto no tiene = adopción sin entregar (AVISO, exit 0)"
+proyecto_git g33b
+git -C "$S/g33b" rm -q docs/ROADMAP.md; git -C "$S/g33b" commit -q -m quitar; git -C "$S/g33b" push -q origin main 2>/dev/null
+printf '%s\n' "$(cat "$S/p/g33b/docs/ROADMAP.md")" > "$S/g33b/docs/ROADMAP.md"
+adopcion "$S/g33b"; rc_es 0; tiene "AVISO: docs/ROADMAP.md existe en el árbol local pero no en origin/main (adopción sin entregar)"
+fin
+
+caso "38 --remoto con el archivo ausente en el remoto: ERROR (adoptado)"
+proyecto_git g38
+git -C "$S/g38" rm -q docs/ROADMAP.md; git -C "$S/g38" commit -q -m quitar; git -C "$S/g38" push -q origin main 2>/dev/null
+adopcion --remoto "$S/g38"; rc_es 1; tiene "ERROR: --remoto: no existe docs/ROADMAP.md en origin/main"
+fin
+
+caso "39 opción desconocida: código 2"
+adopcion --nada "$S/g34"; rc_es 2; tiene "Opción desconocida: --nada"
+fin
+
+caso "40 dependencia escrita como nombre de grupo: el aviso sugiere la última fila"
+proyecto_adoptado a40
+roadmap a40 <<'EOF'
+| ID | Entrega | Depende de | Estado |
+| --- | --- | --- | --- |
+| E04a | Parte a | — | Completada |
+| E04b | Parte b | E04a | Pendiente |
+| E04e | Parte e | E04b | Pendiente |
+| E05 | Siguiente | E04 | Pendiente |
+| E06 | Otro | E99 | Pendiente |
+EOF
+adopcion "$(ruta_p a40)"; rc_es 0
+tiene "E05 depende de «E04», que no existe en la tabla: ¿grupo? usá la última fila, p. ej. E04e"
+tiene "E06 depende de «E99», que no existe en la tabla (¿error de tipeo o externa?)"
+fin
+
 # --- estado-vivo ---------------------------------------------------------------------------------------
 caso "23 estado-vivo sin PR fusionados (gh simulado): no imprime null"
 if ! command -v jq >/dev/null 2>&1; then

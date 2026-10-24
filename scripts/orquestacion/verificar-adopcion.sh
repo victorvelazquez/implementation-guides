@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Control de adopción: ¿cada proyecto tiene los bloques vigentes y un ROADMAP.md válido? Solo lectura.
-# Uso:  bash verificar-adopcion.sh [ruta o prefijo ...]     (sin argumentos, todos los de proyectos.conf)
+# Uso:  bash verificar-adopcion.sh [--remoto] [ruta o prefijo ...]     (sin argumentos, todos los de proyectos.conf)
+#   --remoto  valida origin/<base>:docs/ROADMAP.md (REG-7: lo que leen el panel y la sala) en vez del árbol de
+#             trabajo. La base sale de origin/HEAD (respaldo main, develop, master). No hace fetch: usa las
+#             referencias locales; si hace falta lo último, correr antes `git fetch`. Sin --remoto, avisa si el
+#             árbol local difiere del remoto en ese archivo.
 # Sale con 1 si algún proyecto tiene errores; los avisos no cambian el código de salida.
 #
 # Revisa por proyecto:
@@ -15,7 +19,15 @@
 # línea en blanco (aviso), `|` dentro de una celda (error). El bloque Ciclo ausente es solo INFO (recomendado).
 # Lectura tolerante: "Completada (PR 44)" se entiende como Completada, pero se avisa que el detalle va en Notas.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-seleccionar_proyectos "$@"
+REMOTO=0; ARGS=()
+for a in "$@"; do
+	case "$a" in
+		--remoto) REMOTO=1 ;;
+		--*) echo "Opción desconocida: $a" >&2; exit 2 ;;
+		*) ARGS+=("$a") ;;
+	esac
+done
+seleccionar_proyectos "${ARGS[@]}"
 VIGENTE="$(tr -d '\r\n ' < "$AQUI/VERSION" 2>/dev/null)"; VIGENTE="${VIGENTE:-1.0}"
 
 validar_roadmap() {
@@ -120,8 +132,12 @@ validar_roadmap() {
 				if (t == "" || t == "—" || t == "-") continue
 				if (t in vistos) { if (index(" " adj[di[k]], " " t " ") == 0) adj[di[k]]=adj[di[k]] " " t; continue }
 				if (t ~ /^[A-Za-z][A-Za-z0-9]*-[A-Za-z0-9._-]+$/) continue
-				if (t ~ /^[A-Za-z]+[0-9][A-Za-z0-9._]*$/)
-					print "AVISO\tlínea " dl[k] ": " di[k] " depende de «" t "», que no existe en la tabla (¿error de tipeo o externa?)"
+				if (t ~ /^[A-Za-z]+[0-9][A-Za-z0-9._]*$/) {
+					ult=""
+					for (q=1; q<=nid; q++) if (orden[q] ~ /^[A-Za-z]/ && index(orden[q], t) == 1 && substr(orden[q], length(t)+1) ~ /^[A-Za-z]+$/) ult=orden[q]
+					if (ult != "") print "AVISO	línea " dl[k] ": " di[k] " depende de «" t "», que no existe en la tabla: ¿grupo? usá la última fila, p. ej. " ult
+					else print "AVISO	línea " dl[k] ": " di[k] " depende de «" t "», que no existe en la tabla (¿error de tipeo o externa?)"
+				}
 			}
 		}
 		for (k=1; k<=nid; k++) if (estado[orden[k]]==0) dfs(orden[k])
@@ -200,15 +216,37 @@ for i in "${!PREF[@]}"; do
 			err "AGENTS.md no tiene el bloque de Orquestación (proyecto no adoptado)"
 		fi
 	fi
-	# 2. ROADMAP.md
+	# 2. ROADMAP.md (del árbol de trabajo; con --remoto, de origin/<base> según las referencias locales)
 	rm_="$d/docs/ROADMAP.md"
-	if [ ! -f "$rm_" ]; then
+	rem_ok=0; rem_msg=""; rem_base=""; rem_texto=""
+	if [ -n "$(git -C "$d" rev-parse --show-prefix 2>/dev/null)" ] || ! es_repo "$d"; then rem_msg="no es la raíz de un repositorio Git"
+	elif ! tiene_origin "$d"; then rem_msg="no tiene remoto 'origin'"
+	elif ! rem_base="$(rama_base "$d")" || ! git -C "$d" rev-parse --verify --quiet "refs/remotes/origin/$rem_base" >/dev/null; then
+		rem_msg="origin/${rem_base:-<base>} no existe en las referencias locales (git fetch; este control no lo hace solo)"; rem_base=""
+	elif rem_texto="$(git -C "$d" show "origin/$rem_base:docs/ROADMAP.md" 2>/dev/null)"; then rem_ok=1
+	else rem_msg="no existe docs/ROADMAP.md en origin/$rem_base"; fi
+	texto=""; hay=0; etiqueta="docs/ROADMAP.md"
+	if [ "$REMOTO" = 1 ]; then
+		if [ "$rem_ok" = 1 ]; then
+			hay=1; texto="$(printf '%s\n' "$rem_texto" | sed '1s/^\xEF\xBB\xBF//')"; etiqueta="origin/$rem_base:docs/ROADMAP.md"
+		elif [ "$adoptado" = 1 ]; then err "--remoto: $rem_msg"
+		else avi "--remoto: $rem_msg"; fi
+	elif [ ! -f "$rm_" ]; then
 		if [ "$adoptado" = 1 ]; then err "no existe docs/ROADMAP.md (el proyecto está adoptado)"; else avi "no existe docs/ROADMAP.md"; fi
 	else
+		hay=1; texto="$(sin_bom "$rm_")"
+		# REG-7: los lectores (panel, sala) leen origin/<base>; si el árbol local no coincide, lo que ven es otra cosa.
+		if [ "$rem_ok" = 1 ]; then
+			rem_cmp="$(printf '%s\n' "$rem_texto" | sed '1s/^\xEF\xBB\xBF//')"
+			[ "${texto//$'\r'/}" = "${rem_cmp//$'\r'/}" ] || avi "docs/ROADMAP.md local difiere de origin/$rem_base: los lectores (panel, sala) leen el remoto; validarlo con --remoto"
+		elif [ "$rem_base" != "" ]; then
+			avi "docs/ROADMAP.md existe en el árbol local pero no en origin/$rem_base (adopción sin entregar): los lectores (panel, sala) no lo ven"
+		fi
+	fi
+	if [ "$hay" = 1 ]; then
 		e0=$errores_total; a0=$avisos_total
 		# La cabecera es obligatoria (REG-2): error si el proyecto está adoptado, aviso si no.
 		if [ "$adoptado" = 1 ]; then cab_falla() { err "$1"; }; else cab_falla() { avi "$1"; }; fi
-		texto="$(sin_bom "$rm_")"
 		falta=0
 		l1="$(printf '%s\n' "$texto" | grep -n -m1 '^\*\*Dónde está:\*\*' | cut -d: -f1)"
 		l2="$(printf '%s\n' "$texto" | grep -n -m1 '^\*\*Qué sigue:\*\*' | cut -d: -f1)"
@@ -228,7 +266,7 @@ for i in "${!PREF[@]}"; do
 			[ -z "$tipo" ] && continue
 			if [ "$tipo" = "ERROR" ]; then err "ROADMAP.md, $msg"; else avi "ROADMAP.md, $msg"; fi
 		done <<< "$hallazgos"
-		[ "$errores_total" = "$e0" ] && [ "$avisos_total" = "$a0" ] && echo "   docs/ROADMAP.md: válido"
+		[ "$errores_total" = "$e0" ] && [ "$avisos_total" = "$a0" ] && echo "   $etiqueta: válido"
 	fi
 	# 3. Registro de adopción
 	if [ -f "$d/docs/ORQUESTACION.md" ]; then echo "   docs/ORQUESTACION.md: presente"; else avi "falta docs/ORQUESTACION.md (registro de adopción)"; fi
