@@ -15,6 +15,7 @@ Cuatro scripts de Bash para ver el estado de varios repositorios sin abrirlos un
 | `verificar-repos.sh [prefijo o ruta ...]` | Qué queda realmente pendiente de entregar: cambios sin commitear, commits sin subir, stash. | Nada (también hace `git fetch`). |
 | `estado-vivo.sh [--solo-archivo] [prefijo o ruta ...]` | Tabla con el estado vivo de todos los proyectos. | Solo este script escribe un archivo: `ESTADO-VIVO.md` en `$ESTADO_DIR` (por defecto `.estado/` junto a los scripts, no se versiona). |
 | `verificar-adopcion.sh [--remoto] [prefijo o ruta ...]` | Revisa `AGENTS.md` (bloques de Orquestación) y `docs/ROADMAP.md` de cada proyecto. Con `--remoto` valida `origin/<base>:docs/ROADMAP.md` (lo que leen el panel y la sala) con las referencias locales, sin `fetch`; en modo normal avisa si el árbol local difiere del remoto. Sale con 1 si hay errores; avisos e INFO no cambian el código. | Nada. |
+| `adoptar.sh [--solo-mostrar] [ruta]` | Adopta el bloque Registro en un proyecto: crea `AGENTS.md`, `docs/ROADMAP.md` y `docs/ORQUESTACION.md` desde las plantillas si faltan; agrega el bloque a un `AGENTS.md` existente sin duplicarlo ni pisar nada; no toca un `ROADMAP.md` existente. Termina corriendo `verificar-adopcion.sh` y sale con su código. `--solo-mostrar` simula. | Solo esos archivos en el árbol de trabajo; no usa el índice ni hace commit. |
 
 ## Cómo se llaman
 
