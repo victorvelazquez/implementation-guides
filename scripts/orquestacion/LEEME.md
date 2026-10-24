@@ -14,7 +14,7 @@ Cuatro scripts de Bash para ver el estado de varios repositorios sin abrirlos un
 | `puerta-de-ciclo.sh <prefijo o ruta>` | Dice LISTO o NO LISTO para arrancar una unidad nueva (rama base, árbol limpio, al día con el remoto, sin stash). Sale con 0 o 1. | Nada en el árbol ni en el índice. Hace `git fetch`, que actualiza las referencias remotas dentro de `.git`. |
 | `verificar-repos.sh [prefijo o ruta ...]` | Qué queda realmente pendiente de entregar: cambios sin commitear, commits sin subir, stash. | Nada (también hace `git fetch`). |
 | `estado-vivo.sh [--solo-archivo] [prefijo o ruta ...]` | Tabla con el estado vivo de todos los proyectos. | Solo este script escribe un archivo: `ESTADO-VIVO.md` en `$ESTADO_DIR` (por defecto `.estado/` junto a los scripts, no se versiona). |
-| `verificar-adopcion.sh [prefijo o ruta ...]` | Revisa `AGENTS.md` (bloques de Orquestación) y `docs/ROADMAP.md` de cada proyecto. Sale con 1 si hay errores; avisos e INFO no cambian el código. | Nada. |
+| `verificar-adopcion.sh [--remoto] [prefijo o ruta ...]` | Revisa `AGENTS.md` (bloques de Orquestación) y `docs/ROADMAP.md` de cada proyecto. Con `--remoto` valida `origin/<base>:docs/ROADMAP.md` (lo que leen el panel y la sala) con las referencias locales, sin `fetch`; en modo normal avisa si el árbol local difiere del remoto. Sale con 1 si hay errores; avisos e INFO no cambian el código. | Nada. |
 
 ## Cómo se llaman
 
