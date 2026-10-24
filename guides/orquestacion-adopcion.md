@@ -56,6 +56,21 @@ Dependencias entre métodos: **Enlace** necesita Dirección; **Dirección** nece
 
 ## 4. Cómo implementarlo
 
+### Atajo: `adoptar.sh`
+
+Para el bloque Registro y los dos archivos de `docs/` hay un script que hace los pasos 1 a 3 de «Compatible con panel» sin pisar nada:
+
+```bash
+bash scripts/orquestacion/adoptar.sh --solo-mostrar <ruta-del-proyecto>   # simula y dice qué haría
+bash scripts/orquestacion/adoptar.sh <ruta-del-proyecto>                  # lo hace y corre el control
+```
+
+- Crea `AGENTS.md`, `docs/ROADMAP.md` y `docs/ORQUESTACION.md` desde las plantillas **solo si faltan**; completar después las marcas `<...>`.
+- Si `AGENTS.md` ya existe, agrega el bloque Registro al final sin tocar lo que tiene. Es idempotente: reconoce el marcador `orquestacion:registro` y no lo duplica; si hay otra versión, avisa y no la pisa.
+- Un `docs/ROADMAP.md` existente no se modifica: se avisa y se remite a la auditoría de abajo.
+- No usa el índice de git ni hace commit (el PR de adopción lo arma la persona, ADO-4). Termina corriendo `verificar-adopcion.sh` y sale con su código.
+- No agrega el bloque Ciclo ni copia los scripts; necesita `templates/orquestacion/` junto a `scripts/` (o `PLANTILLAS_DIR`).
+
 ### Compatible con panel (proyecto independiente)
 
 1. Copiar `templates/orquestacion/ROADMAP.md` a `docs/ROADMAP.md` y completar la cabecera y las unidades vigentes.
@@ -130,6 +145,7 @@ El control mira el árbol de trabajo. Lo que leen el panel y la sala es la rama 
 - La lectura del `ROADMAP.md` por un panel concreto todavía no existe.
 - `--remoto` se probó con remotos locales (repositorios bare), no contra un alojamiento real, y sin `fetch` automático: si las referencias locales están viejas, valida lo viejo.
 - El procedimiento ADO-9 (ROADMAP.md existente con otro formato) no se probó sobre un proyecto real; el control no detecta dos tablas de estado.
+- `adoptar.sh` se probó con proyectos de prueba (vacío, con `AGENTS.md` previo con BOM y CRLF, con bloque ya presente, con `ROADMAP.md` existente); no sobre un proyecto real ni en Linux o macOS, y solo agrega el bloque Registro (no el Ciclo).
 
 ## 8. Desviaciones
 
