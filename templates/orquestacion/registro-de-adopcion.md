@@ -3,7 +3,7 @@
 Registro de qué se adoptó y qué se desvió. Lo lee `scripts/orquestacion/verificar-adopcion.sh`.
 
 - **Fecha de adopción:** <fecha>
-- **Perfil:** <compatible con panel | con sala | proyecto nuevo | proyecto existente>
+- **Perfil:** <proyecto independiente | con sala | proyecto nuevo | proyecto existente>
 - **Bloque Registro en `AGENTS.md`:** versión 1.0
 - **Bloque Ciclo en `AGENTS.md`:** versión 1.0 (o «no adoptado»)
 - **Métodos adoptados:** <Registro | Ciclo | Dirección | Enlace>

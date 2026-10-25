@@ -39,7 +39,7 @@ Los métodos son cuatro: **Registro** (qué se hizo y qué sigue), **Ciclo** (c�
 
 | Perfil | Para quién | Métodos |
 | --- | --- | --- |
-| **Compatible con panel** | Un proyecto independiente, sin sala, que quiere publicar su avance de forma estándar | **Registro** (`MUST`); Ciclo (`SHOULD`) |
+| **Proyecto independiente** | Un proyecto sin sala que quiere publicar su avance de forma estándar | **Registro** (`MUST`); Ciclo (`SHOULD`) |
 | **Con sala** | Varios proyectos que se consumen entre sí | Registro, Ciclo, **Dirección** y **Enlace** (los cuatro `MUST`) |
 | **Proyecto nuevo** | Un proyecto que arranca de cero | Las guías vecinas (CI, ramas y merge, versionado) y luego el perfil que corresponda |
 | **Proyecto existente** | Un proyecto con historia que quiere llegar al estándar | La auditoría de la sección 4 y luego el perfil que corresponda |
@@ -51,14 +51,14 @@ Dependencias entre métodos: **Enlace** necesita Dirección; **Dirección** nece
 | Opción | Conviene cuando | Costo |
 | --- | --- | --- |
 | Adoptar un perfil completo | Se quiere un estándar parejo | Más texto en el `AGENTS.md` |
-| Adoptar solo Registro | El proyecto solo necesita aparecer en un panel | No hay reglas de entrega |
+| Adoptar solo Registro | El proyecto solo necesita publicar su avance de forma estándar | No hay reglas de entrega |
 | No adoptar ninguno | Es un proyecto de un solo día | Sin coordinación posible |
 
 ## 4. Cómo implementarlo
 
 ### Atajo: `adoptar.sh`
 
-Para el bloque Registro y los dos archivos de `docs/` hay un script que hace los pasos 1 a 3 de «Compatible con panel» sin pisar nada:
+Para el bloque Registro y los dos archivos de `docs/` hay un script que hace los pasos 1 a 3 de «Proyecto independiente» sin pisar nada:
 
 ```bash
 bash scripts/orquestacion/adoptar.sh --solo-mostrar <ruta-del-proyecto>   # simula y dice qué haría
@@ -71,13 +71,13 @@ bash scripts/orquestacion/adoptar.sh <ruta-del-proyecto>                  # lo h
 - No usa el índice de git ni hace commit (el PR de adopción lo arma la persona, ADO-4). Termina corriendo `verificar-adopcion.sh` y sale con su código.
 - No agrega el bloque Ciclo ni copia los scripts; necesita `templates/orquestacion/` junto a `scripts/` (o `PLANTILLAS_DIR`).
 
-### Compatible con panel (proyecto independiente)
+### Proyecto independiente
 
 1. Copiar `templates/orquestacion/ROADMAP.md` a `docs/ROADMAP.md` y completar la cabecera y las unidades vigentes.
 2. Agregar al `AGENTS.md` el bloque **Registro** (`AGENTS-bloque-registro.md`) y, si se quiere, el bloque **Ciclo** sin las partes `SALA`.
 3. Crear `docs/ORQUESTACION.md` con el registro de adopción.
 4. Copiar `scripts/orquestacion/` (con `lib.sh` y `VERSION`) a una carpeta del proyecto o de herramientas, y correr `bash scripts/orquestacion/verificar-adopcion.sh <ruta-del-proyecto>`. No hace falta `proyectos.conf`.
-5. Mostrar el proyecto en un panel de estado: hoy el panel de referencia tiene la lectura del `ROADMAP.md` **especificada pero no implementada**; hasta entonces el proyecto cumple el formato y espera.
+5. Opcional: verlo en un panel de estado. [`repo-panel`](https://github.com/victorvelazquez/repo-panel) lee el `ROADMAP.md` de la rama base remota; lo que el panel necesita lo define y lo comprueba él mismo (su `requirements.json`), y su orden «Put in conditions» sirve para instalarlo en el proyecto.
 
 ### Con sala
 
@@ -135,14 +135,14 @@ El control mira el árbol de trabajo. Lo que leen el panel y la sala es la rama 
 | --- | --- | --- |
 | Dos sesiones interpretan distinto «completada» | La regla no decía en qué diff se marca | REG-4 y REG-1: figura `Completada` en el diff de su unidad y vale al fusionar |
 | Una sesión adopta pero su texto quedó viejo | El bloque se copió antes de una actualización | Marcador de versión y `verificar-adopcion.sh` |
-| El proyecto adoptó y sigue sin aparecer en el panel | El `ROADMAP.md` no cumple el formato, o el panel no lo lee todavía | Guía Registro, sección 2; `verificar-adopcion.sh` |
+| El proyecto adoptó y sigue sin aparecer en el panel | El `ROADMAP.md` no cumple el formato en la rama base remota (REG-7) | Guía Registro, sección 2; `verificar-adopcion.sh` |
 | La orden de adopción no tiene efecto | La sesión estaba ocupada o no la recibió | Exigir `recibido` y buscar rastro en el repositorio antes de reenviar |
 
 ## 7. No verificado
 
 - Se probó de forma informal en un conjunto pequeño de proyectos de una misma persona y en pocas horas; no con equipos humanos ni con una adopción formal completa.
 - La adopción de un proyecto muy grande (decenas de unidades abiertas) no se probó.
-- La lectura del `ROADMAP.md` por un panel concreto todavía no existe.
+- Un panel concreto lee este formato (`repo-panel`), pero esta guía no lo valida: lo que el panel necesita lo comprueba el propio panel.
 - `--remoto` se probó con remotos locales (repositorios bare), no contra un alojamiento real, y sin `fetch` automático: si las referencias locales están viejas, valida lo viejo.
 - El procedimiento ADO-9 (ROADMAP.md existente con otro formato) no se probó sobre un proyecto real; el control no detecta dos tablas de estado.
 - `adoptar.sh` se probó con proyectos de prueba (vacío, con `AGENTS.md` previo con BOM y CRLF, con bloque ya presente, con `ROADMAP.md` existente); no sobre un proyecto real ni en Linux o macOS, y solo agrega el bloque Registro (no el Ciclo).

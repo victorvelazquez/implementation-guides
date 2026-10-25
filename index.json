@@ -19,7 +19,7 @@
     { "id": "versioning-and-releases", "titulo": "Versionado y releases automáticos", "categoria": "versiones", "ruta": "guides/versioning-and-releases.md", "requiere": [], "plantillas": ["templates/release-please.yml", "templates/release-please-config.json", "templates/release-please-manifest.json"], "scripts": [] }
   ],
   "perfiles": [
-    { "id": "compatible-con-panel", "titulo": "Compatible con panel", "metodos": { "MUST": ["orquestacion-registro"], "SHOULD": ["orquestacion-ciclo"] }, "guia": "orquestacion-adopcion" },
+    { "id": "proyecto-independiente", "titulo": "Proyecto independiente", "metodos": { "MUST": ["orquestacion-registro"], "SHOULD": ["orquestacion-ciclo"] }, "guia": "orquestacion-adopcion" },
     { "id": "con-sala", "titulo": "Con sala", "metodos": { "MUST": ["orquestacion-registro", "orquestacion-ciclo", "orquestacion-direccion", "orquestacion-enlace"] }, "guia": "orquestacion-adopcion" },
     { "id": "proyecto-nuevo", "titulo": "Proyecto nuevo", "metodos": { "SHOULD": ["ci-github-actions", "branching-and-merge", "versioning-and-releases"] }, "luego": "uno de los perfiles anteriores", "guia": "orquestacion-adopcion" },
     { "id": "proyecto-existente", "titulo": "Proyecto existente", "metodos": {}, "primero": "auditoría (guía de adopción, sección 4)", "luego": "uno de los perfiles anteriores", "guia": "orquestacion-adopcion" }

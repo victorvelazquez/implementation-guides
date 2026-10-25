@@ -154,7 +154,7 @@ sin_bom() { sed '1s/^\xEF\xBB\xBF//' "$1"; }
 # Informa un bloque ($1 nombre, $2 versión o vacío).
 informar_bloque() {
 	if [ -z "$2" ]; then
-		if [ "$1" = Ciclo ]; then echo "   INFO: bloque Ciclo no adoptado (recomendado, no obligatorio en el perfil «compatible con panel»)"
+		if [ "$1" = Ciclo ]; then echo "   INFO: bloque Ciclo no adoptado (recomendado, no obligatorio en el perfil «proyecto independiente»)"
 		else avi "AGENTS.md no tiene el bloque $1 (ausente)"; fi
 	elif [ "$2" = "$VIGENTE" ]; then echo "   AGENTS.md: bloque $1 v$2 (vigente)"
 	else avi "AGENTS.md tiene el bloque $1 v$2 y la versión vigente es v$VIGENTE (desactualizado)"; fi
