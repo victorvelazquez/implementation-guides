@@ -30,10 +30,14 @@ Un perfil es un conjunto de guías que se adoptan juntas. Para empezar, ver [Ado
 
 | Perfil | Para quién |
 | --- | --- |
-| Compatible con panel | Proyecto independiente que quiere publicar su avance de forma estándar |
+| Proyecto independiente | Proyecto sin sala que quiere publicar su avance de forma estándar |
 | Con sala | Varios proyectos que se consumen entre sí |
 | Proyecto nuevo | Arranca de cero: guías vecinas y luego el perfil que corresponda |
 | Proyecto existente | Auditoría primero, sin reescribir el historial |
+
+## Panel de estado (opcional)
+
+Si querés ver varios proyectos en un solo lugar, existe [`repo-panel`](https://github.com/victorvelazquez/repo-panel), un panel local opcional. **Lo que el panel necesita de un proyecto lo define y lo comprueba el propio panel** (su `requirements.json` y su `requirements/INSTALL.md`), no estas guías: para poner un proyecto en condiciones, instalá el panel y usá su orden «Put in conditions». Estas guías describen el método de trabajo (Registro, Ciclo, Dirección y Enlace) y funcionan igual sin el panel.
 
 ## Cómo pedirle a una IA que use una guía
 
@@ -49,7 +53,7 @@ Funciona con una ruta local o con la URL del archivo en bruto:
 Para adoptar un perfil completo:
 
 ```text
-Leé guides/orquestacion-adopcion.md de implementation-guides y aplicá el perfil «compatible con panel» a este proyecto.
+Leé guides/orquestacion-adopcion.md de implementation-guides y aplicá el perfil «proyecto independiente» a este proyecto.
 ```
 
 La IA deja el registro de lo adoptado en `docs/ORQUESTACION.md` del proyecto y anota las desviaciones.

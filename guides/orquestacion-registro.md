@@ -83,8 +83,8 @@ Un `ROADMAP.md` ausente en un proyecto que adoptó el bloque es un **error**.
 
 ## 7. No verificado
 
-- La lectura de este formato por un panel concreto está **especificada** pero no implementada.
-- El vínculo unidad→rama/PR (REG-8) es una convención; no se probó con un panel.
+- Un panel concreto (`repo-panel`) lee este formato de la rama base remota; esta guía no lo valida ni define lo que el panel necesita.
+- El vínculo unidad→rama/PR (REG-8) es una convención que `repo-panel` calcula con Git y GitHub; la vía de GitHub no tiene prueba automática en el panel.
 - El método se probó pocas horas, en un solo conjunto de proyectos.
 - El aviso de grupo solo reconoce filas cuyo ID es el nombre del grupo más letras (`E04` → `E04a`…); otros esquemas de nombres no se sugieren.
 - `--remoto` se probó con remotos locales, no contra un alojamiento real.

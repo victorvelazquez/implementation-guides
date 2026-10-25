@@ -383,7 +383,7 @@ caso "28 Ciclo ausente: INFO que no suma a avisos ni errores"
 proyecto_adoptado a28
 printf '<!-- orquestacion:registro v1.0 -->\nr\n<!-- /orquestacion:registro -->\n' > "$S/p/a28/AGENTS.md"
 adopcion "$(ruta_p a28)"; rc_es 0
-tiene "INFO: bloque Ciclo no adoptado (recomendado, no obligatorio en el perfil «compatible con panel»)"
+tiene "INFO: bloque Ciclo no adoptado (recomendado, no obligatorio en el perfil «proyecto independiente»)"
 no_tiene "AVISO"; no_tiene "ERROR"; tiene "Resumen: 0 error(es), 0 aviso(s)"
 fin
 
