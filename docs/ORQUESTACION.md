@@ -7,7 +7,7 @@ Registro de qué se adoptó y qué se desvió. Lo lee `scripts/orquestacion/veri
 - **Bloque Registro en `AGENTS.md`:** versión 1.0
 - **Bloque Ciclo en `AGENTS.md`:** versión 1.0 (sin las regiones `SALA`)
 - **Métodos adoptados:** Registro, Ciclo
-- **Bloques del panel en `AGENTS.md`:** tareas 1.0, entrega 1.0, estado 1.0
+- **Bloques del panel en `AGENTS.md`:** tareas 1.1, entrega 1.0, estado 1.0
 
 El control de adopción compara las versiones con las vigentes mirando los marcadores `orquestacion:registro` y `orquestacion:ciclo` de `AGENTS.md`; este registro es para las personas.
 
@@ -22,4 +22,4 @@ Ninguna por ahora.
 | Git y `gh` | | |
 | repo-panel | | Bloque `panel:estado` en `AGENTS.md`; `.panel/` ignorado en `.git/info/exclude` |
 
-- **Padrón del panel:** 1.0
+- **Padrón del panel:** 1.1
